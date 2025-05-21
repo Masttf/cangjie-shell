@@ -33,7 +33,7 @@ func lsh_help(args: Array<String>) : Bool{
     println("  cd       更改当前目录")
     println("  help     显示此帮助信息")
     println("  exit     退出 LSH")
-    println("\\n对于其他外部程序,请使用其各自的帮助选项(例如 'man <程序名>' 或 '<程序名> --help').")
+    println("对于其他外部程序,请使用其各自的帮助选项(例如 'man <程序名>' 或 '<程序名> --help').")
     return true
 }
 

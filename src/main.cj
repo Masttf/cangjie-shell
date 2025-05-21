@@ -1,17 +1,15 @@
 /*
-author:Masttf
+@author:Masttf
 */
 package lsh
 import std.console.*
 import std.os.posix.chdir
 import std.os.posix.getcwd
 import std.os.process.CurrentProcess
-
+import std.collection.HashMap
 
 func lsh_launch(args: Array<String>) : Bool{
-    // println("lsh: ${args[0]}")
-    let exitCode = CurrentProcess.run(args[0], args.slice(1, args.size - 1))
-    // println("lsh: ${args[0]} exited with code ${exitCode}")
+    CurrentProcess.run(args[0], args.slice(1, args.size - 1))
     return true;
 }
 
@@ -28,20 +26,29 @@ func lsh_cd(args: Array<String>) : Bool {
     return true
 }
 
-func lsh_help() : Bool{
-    println("LSH")
-    println("输入程序的名字和参数，按回车运行")
-    println("下面是内置的程序")
-    println("help")
-    println("cd")
-    println("exit")
-    println("对于其他的程序使用man函数")
+func lsh_help(args: Array<String>) : Bool{
+    println("LSH - Cangjie Shell")
+    println("输入程序名称和参数，然后按 Enter 键执行。")
+    println("内置命令列表:")
+    println("  cd       更改当前目录")
+    println("  help     显示此帮助信息")
+    println("  exit     退出 LSH")
+    println("\\n对于其他外部程序,请使用其各自的帮助选项(例如 'man <程序名>' 或 '<程序名> --help').")
     return true
 }
 
-func lsh_exit() : Bool{
+
+func lsh_exit(args: Array<String>) : Bool{
     return false;
 }
+
+type CommandHandler = (Array<String>) -> Bool
+// 定义 builtInCommands 映射表
+let builtInCommands = HashMap<String, CommandHandler>([
+    ("cd",lsh_cd),
+    ("help",lsh_help),
+    ("exit",lsh_exit)
+])
 
 func lsh_read_line() : String{
     return Console.stdIn.readln() ?? ""
@@ -58,17 +65,12 @@ func lsh_execute(args: Array<String>) : Bool{
     if(args.size == 0){
         return true
     }
-    if(args[0] == "cd"){
-        return lsh_cd(args)
-    }else if(args[0] == "help"){
-        return lsh_help()
-    }else if(args[0] == "exit"){
-        return lsh_exit()
+    let commandName = args[0]
+    if(builtInCommands.contains(commandName)){
+        return builtInCommands[commandName](args) 
     }else{
         return lsh_launch(args)
     }
-
-    return false
 }
 
 func lsh_loop() : Unit{
@@ -76,9 +78,7 @@ func lsh_loop() : Unit{
     do{
         print(getcwd() + "> ")
         let line: String = lsh_read_line()
-        // println(line)
         let args: Array<String> = lsh_split_line(line, " ")
-        // println(args)
         status = lsh_execute(args)
     } while(status == true)
 }
